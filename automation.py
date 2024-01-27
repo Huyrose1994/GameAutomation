@@ -8,6 +8,7 @@ from time import sleep
 class Automation():
     def __init__(self):
         # Target window location
+
         windows = gw.getAllTitles()
         target_window_title = 'BlueStacks App Player'
         target_window = gw.getWindowsWithTitle(target_window_title)
@@ -17,6 +18,7 @@ class Automation():
         self.image_2 = cv2.imread('./DetectionObjects/Skip(2).png')
         self.threshold = 0.7
         self.n_clicks = 500
+        self.xloc, self.yloc = (169,493)
     def take_screenshot(self):
         return np.array(pyautogui.screenshot(region = (self.left, self.top, self.width, self.height)))
     
@@ -33,7 +35,7 @@ class Automation():
         screenshot = self.take_screenshot()
         result_1 = cv2.matchTemplate(screenshot, self.image_1, cv2.TM_CCOEFF_NORMED)
         result_2 = cv2.matchTemplate(screenshot, self.image_2, cv2.TM_CCOEFF_NORMED)
-        pyautogui.leftClick(x = 131, y = 288)
+        pyautogui.leftClick(x = self.xloc, y = self.yloc)
         print('Click Quest', end = '\r')
         self.click_on_result(result_1)
         self.click_on_result(result_2)     
