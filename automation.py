@@ -18,7 +18,10 @@ class Automation():
         self.image_2 = cv2.imread('./DetectionObjects/Skip(2).png')
         self.threshold = 0.7
         self.n_clicks = 500
-        self.xloc, self.yloc = (169,493)
+        self.quest_1 = (173,486)
+        self.quest_2 = (174,548)
+        self.quest_3 = (169,619)
+        self.xloc, self.yloc = self.quest_1
     def take_screenshot(self):
         return np.array(pyautogui.screenshot(region = (self.left, self.top, self.width, self.height)))
     
