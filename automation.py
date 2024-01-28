@@ -18,10 +18,9 @@ class Automation():
         self.image_2 = cv2.imread('./DetectionObjects/Skip(2).png')
         self.threshold = 0.7
         self.n_clicks = 500
-        self.quest_1 = (173,486)
-        self.quest_2 = (174,548)
-        self.quest_3 = (169,619)
-        self.xloc, self.yloc = self.quest_1
+        self.list_quests = [(173,486), (174,548), (169,619)]
+        self.list_screenshot = []
+        self.i = 0
     def take_screenshot(self):
         return np.array(pyautogui.screenshot(region = (self.left, self.top, self.width, self.height)))
     
@@ -36,8 +35,16 @@ class Automation():
 
     def Skips(self):
         screenshot = self.take_screenshot()
+        self.list_screenshot.append(screenshot)
+        __corr = cv2.matchTemplate(screenshot, self.list_sWcreenshot[-1], cv2.TM_CCOEFF_NORMED)
+        print(__corr)
+        if __corr > self.threshold:
+            self.i += 1
+            self.xloc, self.yloc = self.list_quests[-self.i]
+            print(self.i)
         result_1 = cv2.matchTemplate(screenshot, self.image_1, cv2.TM_CCOEFF_NORMED)
         result_2 = cv2.matchTemplate(screenshot, self.image_2, cv2.TM_CCOEFF_NORMED)
+
         pyautogui.leftClick(x = self.xloc, y = self.yloc)
         print('Click Quest', end = '\r')
         self.click_on_result(result_1)
