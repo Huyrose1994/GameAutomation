@@ -18,7 +18,7 @@ class Automation():
         self.image_2 = cv2.imread('./DetectionObjects/Skip(2).png')
         self.threshold = 0.7
         self.n_clicks = 500
-        self.list_quests = [(173,486), (174,548), (169,619)]
+        self.list_quests = [(110,289), (119,334), (113,374)]
         self.list_screenshot = []
         self.i = 0
     def take_screenshot(self):
@@ -36,9 +36,9 @@ class Automation():
     def Skips(self):
         screenshot = self.take_screenshot()
         self.list_screenshot.append(screenshot)
-        __corr = cv2.matchTemplate(screenshot, self.list_sWcreenshot[-1], cv2.TM_CCOEFF_NORMED)
+        __corr = cv2.matchTemplate(screenshot, self.list_screenshot[-1], cv2.TM_CCOEFF_NORMED)
         print(__corr)
-        if __corr > self.threshold:
+        if __corr > 0.999:
             self.i += 1
             self.xloc, self.yloc = self.list_quests[-self.i]
             print(self.i)
