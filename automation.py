@@ -3,6 +3,8 @@ import cv2
 import pyautogui
 import pygetwindow as gw
 import glob
+
+from skimage.metrics import structural_similarity
 from time import sleep
 
 '''
@@ -34,43 +36,55 @@ class Automation():
         list_files = glob.glob('./DetectionObjects/*.png')
         for index, file in enumerate(list_files):
             self.dict_image[index] = cv2.imread(file)
-            print(file)
+            print(cv2.imread(file))
         self.threshold = 0.7
 
         # Number of click
         self.n_clicks = 1000
         self.list_quests = [(319,303)]
         self.list_screenshot = []
+        self.previous_main = []
         self.i = 0
 
-    def take_screenshot(self):
+    def take_screenshot(sel, left, top, width, height):
         # Take screenshot of window
-        return np.array(pyautogui.screenshot(region = (self.left, self.top, self.width, self.height)))
+        return np.array(pyautogui.screenshot(region = (left, top, width, height)))
 
     def recursive_process(self):
         # Check current screen
-        screen = self.take_screenshot()
+        screen = self.take_screenshot(self.left, self.top, self.width, self.height)
+        main_quest = self.take_screenshot(225, 243, 531, 350)
         self.list_screenshot.append(screen)
+        self.previous_main.append(main_quest)
         if len(self.list_screenshot) > 3:
             del self.list_screenshot[0]
-        print(len(self.list_screenshot))
+        if len(self.previous_main) > 3:
+            del self.previous_main[0]
+        print(len(self.previous_main))
+
         # Check image
         for key,value in self.dict_image.items():     
             similarity = cv2.matchTemplate(screen, value, cv2.TM_CCOEFF_NORMED)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(similarity)
-            top_left = max_loc
-            bottom_right = (top_left[0] + 180, top_left[1] + 50)  # (Where w, h are dimensions of the template)
+            bottom_right = (max_loc[0] + 180, max_loc[1] + 50)  # (Where w, h are dimensions of the template)
         
             if max_val >= 0.95: # Check similarity & click on image
-                x, y = max_loc
                 pyautogui.click(bottom_right)
                 sleep(0.5)
-            # elif \
-            # Check if the main quest reach limited, move to second quest
             else: # Click on Quest
+                try:
+                    score, _ = structural_similarity(self.previous_main[-1], self.previous_main[-2], full = True)
+                    print(score)
+                except:
+                    print('Failure')
+                    # try:
+                    #     print(self.previous_main[-1])
+                    #     print(self.previous_main[-2])
+                    # except:
+                    pass
                 self.xloc, self.yloc = self.list_quests[-self.i]
                 pyautogui.leftClick(x = self.xloc, y = self.yloc)
-                sleep(10)
+                sleep(5)
             self.recursive_process()
 
 
