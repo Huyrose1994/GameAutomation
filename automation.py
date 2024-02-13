@@ -43,10 +43,10 @@ class Automation():
 
         # Number of click
         self.n_clicks = 1000
-        self.list_quests = [(319,303), (376,422)]
+        self.list_quests = [(319,303), (376,422), (404,510)]
         self.list_screenshot = []
         self.previous_main = []
-        self.i = 0
+        self.quest_number = 0
 
     def take_screenshot(sel, left, top, width, height):
         # Take screenshot of window
@@ -75,12 +75,14 @@ class Automation():
             else: # Click on Quest
                 try:
                     score, _ = structural_similarity(self.previous_main[-1], self.previous_main[-2], full = True)
-                    print(score)
-                    if score >= 0.8:
-                        self.xloc, self.yloc = self.list_quests[-1]
+                    if (score >= 0.8) & (self.quest_number <= len(self.list_quests)):
+                        self.quest_number += 1
+                        self.xloc, self.yloc = self.list_quests[self.quest_number]
                         pyautogui.leftClick(x = self.xloc, y = self.yloc)
                         sleep(5)
                     else:
+                        # Do Main Quest
+                        self.quest_number = 0
                         self.xloc, self.yloc = self.list_quests[0]
                         pyautogui.leftClick(x = self.xloc, y = self.yloc)
                         sleep(5)
