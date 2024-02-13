@@ -14,8 +14,8 @@ Check Image:
     Yes: Click on Image
     No: Click on Quest
         Check Image Q1:
-            Change: Continue
-            No Change: Click Image Q2
+            Change: Q = Q1, Click on Q
+            No Change: Q = Q1 + 1, Click on Q
 Recursive Loop
 '''
 
