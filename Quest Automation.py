@@ -43,7 +43,7 @@ class Automation():
 
         # Number of click
         self.n_clicks = 1000
-        self.list_quests = [(319,303), (376,422), (404,510)]
+        self.list_quests = [(319,303), (319,422), (319,510)]
         self.list_screenshot = []
         self.previous_main = []
         self.quest_number = 0
@@ -67,15 +67,17 @@ class Automation():
         for key,value in self.dict_image.items():     
             similarity = cv2.matchTemplate(screen, value, cv2.TM_CCOEFF_NORMED)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(similarity)
-            bottom_right = (max_loc[0] + 180, max_loc[1] + 50)  # (Where w, h are dimensions of the template)
- 
-            if max_val >= 0.95: # Check similarity & click on image
+            bottom_right = (max_loc[0] + 190, max_loc[1] + 50)  # (Where w, h are dimensions of the template)
+            print('Check image %s' %key, max_val, end = '\r')
+            if max_val >= 0.60: # Check similarity & click on image
                 pyautogui.click(bottom_right)
+                if key == 3:
+                    sleep(0.5)
                 sleep(0.5)
             else: # Click on Quest
                 try:
                     score, _ = structural_similarity(self.previous_main[-1], self.previous_main[-2], full = True)
-                    if (score >= 0.8) & (self.quest_number <= len(self.list_quests)):
+                    if (score >= 0.9) & (self.quest_number <= len(self.list_quests)):
                         self.quest_number += 1
                         self.xloc, self.yloc = self.list_quests[self.quest_number]
                         pyautogui.leftClick(x = self.xloc, y = self.yloc)
@@ -90,7 +92,7 @@ class Automation():
                     print('Not Enough Data: Failure')
                     pass
 
-            self.recursive_process()
+        self.recursive_process()
 
 if __name__ == '__main__':
      print('Running')
