@@ -73,26 +73,32 @@ class Automation():
                 pyautogui.click(bottom_right)
                 if key == 3:
                     sleep(0.5)
-                sleep(0.5)
-            else: # Click on Quest
-                try:
-                    score, _ = structural_similarity(self.previous_main[-1], self.previous_main[-2], full = True)
-                    if (score >= 0.9) & (self.quest_number <= len(self.list_quests)):
-                        self.quest_number += 1
-                        self.xloc, self.yloc = self.list_quests[self.quest_number]
-                        pyautogui.leftClick(x = self.xloc, y = self.yloc)
-                        sleep(5)
-                    else:
-                        # Do Main Quest
-                        self.quest_number = 0
-                        self.xloc, self.yloc = self.list_quests[0]
-                        pyautogui.leftClick(x = self.xloc, y = self.yloc)
-                        sleep(5)
-                except:
-                    print('Not Enough Data: Failure')
-                    pass
+            # else: # Click on Quest
+                self.recursive_process()
 
+        self.xloc, self.yloc = self.list_quests[self.quest_number]
+        pyautogui.leftClick(x = self.xloc, y = self.yloc)
+        sleep(5)
         self.recursive_process()
+
+
+                # try:
+                #     score, _ = structural_similarity(self.previous_main[-1], self.previous_main[-2], full = True)
+                #     if (score >= 0.9) & (self.quest_number <= len(self.list_quests)):
+                #         self.quest_number += 1
+                #         self.xloc, self.yloc = self.list_quests[self.quest_number]
+                #         pyautogui.leftClick(x = self.xloc, y = self.yloc)
+                #         sleep(5)
+                #     else:
+                #         # Do Main Quest
+                #         self.quest_number = 0
+                #         self.xloc, self.yloc = self.list_quests[0]
+                #         pyautogui.leftClick(x = self.xloc, y = self.yloc)
+                #         sleep(5)
+                # except:
+                #     print('Not Enough Data: Failure')
+                #     pass
+                
 
 if __name__ == '__main__':
      print('Running')
