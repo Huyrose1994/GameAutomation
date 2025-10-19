@@ -27,7 +27,7 @@ class Automation():
         self.list_quests = [
             (self.left + 100, self.top + 200), 
             (self.left + 100, self.top + 260), 
-            (self.left + 100, self.top + 350)
+            (self.left + 100, self.top + 320)
         ]
 
         # Initialize click parameters
@@ -105,12 +105,14 @@ class Automation():
             if max_val_1 > 0.65 and max_val_2 > 0.65:
                 self.quest_number += 1
                 if self.quest_number >= len(self.list_quests):
+                    self.quest_number = 0
                     print('All quests completed.')
+                    pyautogui.press('tab')
                     return
                 print(f'Moving to quest {self.quest_number + 1}')
                 self.xloc, self.yloc = self.list_quests[self.quest_number]
                 pyautogui.click(self.xloc, self.yloc)
-                sleep(2)
+                sleep(5)
                 self.previous_main = []
 
         self.i += 1
