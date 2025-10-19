@@ -31,17 +31,12 @@ class Automation():
         ]
 
         # Initialize click parameters
-        self.n_clicks = 500
         self.i = 0
 
-        # Main quest location
-        self.xloc, self.yloc = self.list_quests[0] # Initialize quest location
-        
         # Comparing screenshots
         self.list_screenshot = []
         self.previous_main = []
         self.quest_number = 0
-        
 
     def take_screenshot(self):
         return np.array(
@@ -62,8 +57,8 @@ class Automation():
             
             pyautogui.click(absolute_x, absolute_y)
             print(f"Clicked Skip button with confidence: {max_val:.3f}")
-            return True # Indicate that a click was performed
-        return False # Indicate no click was performed
+            return True
+        return False
 
     def recursive_process(self):
         print(f"--- Running cycle {self.i + 1} ---")
@@ -75,6 +70,7 @@ class Automation():
         main_quest = cv2.cvtColor(
             main_quest_np, cv2.COLOR_BGR2GRAY
             )
+        
         self.list_screenshot.append(screenshot)
         self.previous_main.append(main_quest)
         
@@ -83,19 +79,43 @@ class Automation():
         if len(self.previous_main) > 3:
             del self.previous_main[0]
 
-        for key, value in self.dict_image.items():
-            similarity = cv2.matchTemplate(screenshot, value, cv2.TM_CCOEFF_NORMED)
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(similarity)
-            print('Check image %s' %key, max_val, end = '\r')
-            bottom_right = (max_loc[0], max_loc[1])
-            result = cv2.matchTemplate(screenshot, value, cv2.TM_CCOEFF_NORMED)
-            if max_val >= 0.60: 
-                self.click_on_result(result, value.shape[1], value.shape[0])
-                sleep(0.5)
-                    
-        pyautogui.click(self.xloc, self.yloc)
-        sleep(5)
+        temp_similarity = 1
+        while temp_similarity > 0.65:
+            for key, skip_photos in self.dict_image.items():
+                similarity = cv2.matchTemplate(self.take_screenshot(), skip_photos, cv2.TM_CCOEFF_NORMED)
+                _, max_val, _, max_loc = cv2.minMaxLoc(similarity)
+                print('Check image %s' %key, max_val, end = '\r')
+                result = cv2.matchTemplate(self.take_screenshot(), skip_photos, cv2.TM_CCOEFF_NORMED)
+                if max_val >= 0.60: 
+                    self.click_on_result(result, skip_photos.shape[1], skip_photos.shape[0])
+                    sleep(1)
+                temp_similarity = max_val
+
+        # If the screen is the same, move to the next quest
+        if len(self.previous_main) == 3:
+            similarity_1 = cv2.matchTemplate(
+                self.previous_main[0], self.previous_main[1], cv2.TM_CCOEFF_NORMED
+                )
+            similarity_2 = cv2.matchTemplate(
+                self.previous_main[1], self.previous_main[2], cv2.TM_CCOEFF_NORMED
+                )
+            _, max_val_1, _, _ = cv2.minMaxLoc(similarity_1)
+            _, max_val_2, _, _ = cv2.minMaxLoc(similarity_2)
+            print(f'Similarity check: {max_val_1:.3f}, {max_val_2:.3f}')
+            if max_val_1 > 0.65 and max_val_2 > 0.65:
+                self.quest_number += 1
+                if self.quest_number >= len(self.list_quests):
+                    print('All quests completed.')
+                    return
+                print(f'Moving to quest {self.quest_number + 1}')
+                self.xloc, self.yloc = self.list_quests[self.quest_number]
+                pyautogui.click(self.xloc, self.yloc)
+                sleep(2)
+                self.previous_main = []
+
+        self.i += 1
         self.recursive_process()
+
 
 if __name__ == '__main__':
      print('Running')
