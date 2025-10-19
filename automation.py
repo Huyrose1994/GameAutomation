@@ -3,8 +3,13 @@ import numpy as np
 import cv2
 import pyautogui
 import pygetwindow as gw
+import keyboard
+import logging
+import sys
 
 from time import sleep
+
+logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class Automation():
     def __init__(self):
@@ -37,6 +42,19 @@ class Automation():
         self.list_screenshot = []
         self.previous_main = []
         self.quest_number = 0
+        self.stop = False
+
+    def stop_execution(self):
+        logging.info("Stopping execution...")
+        self.stop = True
+
+    def setup_key_listener(self, key_to_use = 'esc'):
+        logging.info(f"Press '{key_to_use}' to stop the automation.")
+        keyboard.add_hotkey(key_to_use, self.stop_execution)
+
+    def clean_up(self):
+        keyboard.remove_all_hotkeys()
+        logging.info("Cleaned up key listeners.")
 
     def take_screenshot(self):
         return np.array(
@@ -56,12 +74,15 @@ class Automation():
             absolute_y = self.top + relative_y - 10
             
             pyautogui.click(absolute_x, absolute_y)
-            print(f"Clicked Skip button with confidence: {max_val:.3f}")
+            logging.info(f"Clicked Skip button with confidence: {max_val:.3f}")
             return True
         return False
 
     def recursive_process(self):
-        print(f"--- Running cycle {self.i + 1} ---")
+        if self.stop:
+            logging.info("Automation stopped by user.")
+            return
+        logging.info(f"--- Running cycle {self.i + 1} ---")
 
         # Take a screenshot
         screenshot = self.take_screenshot()
@@ -84,7 +105,7 @@ class Automation():
             for key, skip_photos in self.dict_image.items():
                 similarity = cv2.matchTemplate(self.take_screenshot(), skip_photos, cv2.TM_CCOEFF_NORMED)
                 _, max_val, _, max_loc = cv2.minMaxLoc(similarity)
-                print('Check image %s' %key, max_val, end = '\r')
+                logging.info('Check image %s: %s' % (key, max_val))
                 result = cv2.matchTemplate(self.take_screenshot(), skip_photos, cv2.TM_CCOEFF_NORMED)
                 if max_val >= 0.60: 
                     self.click_on_result(result, skip_photos.shape[1], skip_photos.shape[0])
@@ -101,15 +122,15 @@ class Automation():
                 )
             _, max_val_1, _, _ = cv2.minMaxLoc(similarity_1)
             _, max_val_2, _, _ = cv2.minMaxLoc(similarity_2)
-            print(f'Similarity check: {max_val_1:.3f}, {max_val_2:.3f}')
+            logging.info(f'Similarity check: {max_val_1:.3f}, {max_val_2:.3f}')
             if max_val_1 > 0.65 and max_val_2 > 0.65:
                 self.quest_number += 1
                 if self.quest_number >= len(self.list_quests):
                     self.quest_number = 0
-                    print('All quests completed.')
+                    logging.info('All quests completed.')
                     pyautogui.press('tab')
                     return
-                print(f'Moving to quest {self.quest_number + 1}')
+                logging.info(f'Moving to quest {self.quest_number + 1}')
                 self.xloc, self.yloc = self.list_quests[self.quest_number]
                 pyautogui.click(self.xloc, self.yloc)
                 sleep(5)
@@ -120,6 +141,8 @@ class Automation():
 
 
 if __name__ == '__main__':
-     print('Running')
+     logging.info('Running')
      initiate = Automation()
+     initiate.setup_key_listener('esc')
      initiate.recursive_process()
+     initiate.clean_up()
